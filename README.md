@@ -25,7 +25,7 @@ The unit plugs into the Keyboard, Video and Mouse ports of a computer or server 
 
 [Demo Video](https://www.bilibili.com/video/BV1c841177hF/)
 
-* Web browser as client
+* Web browser as client _(with optional Basic Authentication)_
 * 1080P 30fps video stream
 * Full mouse & keyboard support
 * UI Indicator
@@ -101,6 +101,23 @@ SSH to linux SBC with your pc.
 
 <details>
 
+<summary>Deploy App and Dependency on Raspberry Pi 3 Linux SBC</summary>
+
+* Install Node.js 14.x+ and dependencies
+  * `sudo apt update`
+  * `sudo apt install git npm snapd`
+  * `sudo snap install core`
+* Install [MJPG-Streamer]
+  * `sudo snap install mjpg-streamer`
+* Clone repo and install its dependency
+  * `#git clone https://github.com/Nihiue/open-ip-kvm.git`
+  * `git clone https://github.com/diepeterpan/open-ip-kvm.git`
+  * `cd open-ip-kvm && npm install`
+  * `sudo reboot`
+</details>
+
+<details>
+
 <summary>Connect IO and edit config</summary>
 
 * Connect IO
@@ -109,7 +126,8 @@ SSH to linux SBC with your pc.
 * Edit `open-ip-kvm/server/config.json`
   * `mjpg_streamer.device`: path of HDMI-USB capture device
   * `serialport`: path of serial port
-
+  * `basic_auth`: _enable_ or _disable_ basic authentication boolean and set a `username` and `password` when basic authentication is required
+  * `mjpg_streamer.exec_name`: name is different for snap install e.g. _"mjpg-streamer"_
 </details>
 
 
@@ -117,7 +135,34 @@ SSH to linux SBC with your pc.
 
 1. Connect HDMI output of target computer to HDMI-USB capture device
 2. Connect target computer to leonardo via USB
-3. Run `cd open-ip-kvm && npm run start` on linux SBC
+3. Manually run `cd open-ip-kvm && npm run start` on linux SBC or follow process below for automatic service 
+    <details>
+    <summary>Install as Linux service</summary>
+
+    * Create and enable service
+      * `sudo nano /etc/systemd/system/openipkvm.service`
+      ```[Unit]
+      Description=OpenIPKVM service
+      After=network.target
+      StartLimitIntervalSec=0
+
+      [Service]
+      Type=simple
+      Restart=always
+      RestartSec=5
+      User=admin
+      ExecStart=npm run start
+      WorkingDirectory=/home/admin/open-ip-kvm/
+
+      [Install]
+      WantedBy=multi-user.target
+      ```
+      * `sudo chmod 644 /etc/systemd/system/openipkvm.service`
+      * `sudo systemctl daemon-reload`
+      * `sudo systemctl enable openipkvm.service`
+      * `sudo systemctl start openipkvm.service`
+      * `sudo systemctl status openipkvm.service`
+    </details>
 4. Turn on target computer
 5. Open `http://[IP of Linux SBC]:8000` in web browser
 
