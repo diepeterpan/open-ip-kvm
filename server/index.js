@@ -10,6 +10,9 @@ const ws = require('ws');
 const Koa = require('koa');
 const KoaStaic = require('koa-static');
 
+var credentials = { name: '', pass: '' }
+const auth = require('koa-basic-auth');
+
 const { startSerial } = require('./serial.js');
 const { startMJPGStreamer } = require('./mjpg-streamer.js');
 
@@ -37,8 +40,31 @@ async function start() {
       }));
     }
 
-
     const app = new Koa();
+
+    if (config.basic_auth.enabled) {
+      //Error handling for authentication
+      app.use(function* (next) {
+        try {
+          yield next;
+        } catch (err) {
+          if (401 == err.status) {
+            this.status = 401;
+            this.set('WWW-Authenticate', 'Basic');
+            this.body = 'Unauthorized.';
+          } else {
+            throw err;
+          }
+        }
+      });
+
+      credentials.name = config.basic_auth.username;
+      credentials.pass = config.basic_auth.password;
+
+      //Require Auth
+      app.use(auth(credentials));
+    };
+
     app.use(KoaStaic(path.join(__dirname, '../public')));
 
     const server = app.listen(config.listen_port);
@@ -64,7 +90,7 @@ async function start() {
     });
 
     wsInstance.on('connection', websocketHandler);
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     process.exit(1);
   }

@@ -9,7 +9,7 @@ function startMJPGStreamer(opt) {
 
   return new Promise((resolve, reject) => {
     const cmd = [
-      'mjpg_streamer',
+      `'${opt.exec_name}'`,
       '-i',
       `'input_uvc.so -d ${opt.device} -r ${opt.res} -f ${opt.fps} -n'`,
       '-o',
