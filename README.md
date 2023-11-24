@@ -141,7 +141,8 @@ SSH to linux SBC with your pc.
 
     * Create and enable service
       * `sudo nano /etc/systemd/system/openipkvm.service`
-      ```[Unit]
+      ```
+      [Unit]
       Description=OpenIPKVM service
       After=network.target
       StartLimitIntervalSec=0
