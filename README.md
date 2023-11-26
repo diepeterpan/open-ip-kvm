@@ -154,6 +154,7 @@ SSH to linux SBC with your pc.
       User=admin
       ExecStart=npm run start
       WorkingDirectory=/home/admin/open-ip-kvm/
+      ExecStopPost=pkill mjpg_streamer
 
       [Install]
       WantedBy=multi-user.target
